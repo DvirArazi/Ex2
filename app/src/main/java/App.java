@@ -8,10 +8,5 @@ public class App {
 	}
 
 	public static void main(String[] args) {
-		TokenArray t = (TokenArray) ExpressionUtils.tokenizer("((123+321)*22)-11111").get();
-
-		double d = ExpressionUtils.collapser(t.value).value;
-
-		System.out.println(new App().getGreeting());
 	}
 }
