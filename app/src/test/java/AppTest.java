@@ -128,7 +128,7 @@ class AppTest {
 
   @Test
   void depthTest() {
-    Spreadsheet spreadsheet = new Spreadsheet(10, 1);
+    Spreadsheet spreadsheet = new Spreadsheet(13, 1);
 
     spreadsheet.set(0, 0, new Cell("=1+2*2"));
     assertEquals(spreadsheet.depthOne(0, 0), 1);
@@ -171,5 +171,14 @@ class AppTest {
 
     spreadsheet.set(9, 0, new Cell("=(3+1*2)-"));
     assertEquals(spreadsheet.depthOne(9, 0), -1);
+
+    spreadsheet.set(10, 0, new Cell("=1..0"));
+    assertEquals(spreadsheet.depthOne(10, 0), -1);
+
+    spreadsheet.set(11, 0, new Cell("=(1..0+57)"));
+    assertEquals(spreadsheet.depthOne(11, 0), -1);
+
+    spreadsheet.set(12, 0, new Cell("=(1..0+57)*7.5"));
+    assertEquals(spreadsheet.depthOne(12, 0), -1);
   }
 }

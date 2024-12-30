@@ -37,6 +37,9 @@ public class ExpressionUtils {
             Token token = optionalToken.get();
             tokens.add(token);
           }
+          else {
+            return Optional.empty();
+          }
         }
 
         continue;
@@ -48,7 +51,11 @@ public class ExpressionUtils {
         continue;
       } else if (openNum) {
         openNum = false;
-        tokens.add(new TokenNumber(Double.parseDouble(tempNumStr)));
+        try {
+          tokens.add(new TokenNumber(Double.parseDouble(tempNumStr)));
+        } catch (Exception e) {
+          return Optional.empty();
+        }
         tempNumStr = "";
       }
 
@@ -70,8 +77,13 @@ public class ExpressionUtils {
       return Optional.empty();
     }
 
-    if (openNum)
-      tokens.add(new TokenNumber(Double.parseDouble(tempNumStr)));
+    if (openNum) {
+      try {
+        tokens.add(new TokenNumber(Double.parseDouble(tempNumStr)));
+      } catch (Exception e) {
+        return Optional.empty();
+      }
+    }
 
     if (tokens.size() == 1)
       return Optional.of((TokenNumber) tokens.get(0));
@@ -147,7 +159,8 @@ public class ExpressionUtils {
 
         tokens.set(i, new TokenNumber(op.apply(num0, num1)));
         tokens.remove(i + 1);
-        if (i - 1 >= 0) tokens.remove(i - 1);
+        if (i - 1 >= 0)
+          tokens.remove(i - 1);
       }
     }
 
