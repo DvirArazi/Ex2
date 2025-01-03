@@ -166,9 +166,8 @@ public class Ex2Sheet implements Sheet {
 
   Computable compute(String line, List<Coord> coords) {
     if (line.startsWith("=")) {
-      Coord coord = coords.getLast();
       String expr = line.substring(1).replaceAll(" ", "");
-      Collapsable result = collapse(expr, List.of(coord));
+      Collapsable result = collapse(expr, coords);
       return switch (result) {
         case BoxedExprNum boxedExprNum -> boxedExprNum;
         case BoxedFormErr boxedFormErr -> boxedFormErr;
