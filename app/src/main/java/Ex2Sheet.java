@@ -87,6 +87,45 @@ public class Ex2Sheet implements Sheet {
     return ans;
   }
 
+  int depthSingle(List<Coord> coords) {
+    Coord last = coords.getLast();
+    Cell cell = table[last.x][last.y];
+    String line = cell.getData();
+
+    boolean openCoord = false;
+
+    ArrayList<String> parts = new ArrayList<>();
+
+    for (int i = 0; i < line.length(); i++) {
+      char ch = line.charAt(i);
+      if (!openCoord) {
+        if (Character.isAlphabetic(ch)) {
+          openCoord = true;
+          parts.add(ch + "");
+        }
+      } else {
+        if (Character.isDigit(ch))
+          parts.set(parts.size() - 1, parts.getLast() + ch);
+        else
+          openCoord = false;
+      }
+    }
+
+    ArrayList<Coord> newCoords = new ArrayList<Coord>();
+    for (int i = 0; i < parts.size(); i++) {
+      Coord newCoord = parseCoord(parts.get(i)).get();
+
+      if (containsCoord(coords, newCoord))
+        return -1;
+
+      newCoords.add(newCoord);
+    }
+
+    // for (int i = 0;)
+
+    return 0;
+  }
+
   @Override
   public void load(String fileName) throws IOException {
     // Add your code here
@@ -125,7 +164,7 @@ public class Ex2Sheet implements Sheet {
     };
   }
 
-  public Computable compute(String line, List<Coord> coords) {
+  Computable compute(String line, List<Coord> coords) {
     if (line.startsWith("=")) {
       Coord coord = coords.getLast();
       String expr = line.substring(1).replaceAll(" ", "");
@@ -146,7 +185,7 @@ public class Ex2Sheet implements Sheet {
     return new BoxedText(line);
   }
 
-  public Collapsable collapse(String expr, List<Coord> coords) {
+  Collapsable collapse(String expr, List<Coord> coords) {
     while (expr.startsWith("(") && expr.endsWith(")"))
       expr = expr.substring(1, expr.length() - 1);
 
@@ -162,9 +201,8 @@ public class Ex2Sheet implements Sheet {
       Optional<Coord> optionalCoord = parseCoord(expr);
       if (optionalCoord.isPresent()) {
         Coord coord = optionalCoord.get();
-        if (coords.stream().anyMatch(c -> c.x == coord.x && c.y == coord.y)) {
+        if (containsCoord(coords, coord))
           return new BoxedCyclErr();
-        }
 
         if (!isIn(coord.x, coord.y))
           return new BoxedFormErr();
@@ -225,7 +263,7 @@ public class Ex2Sheet implements Sheet {
     return new BoxedFormErr();
   }
 
-  public Optional<Integer> getOpIndex(String expr) {
+  Optional<Integer> getOpIndex(String expr) {
     boolean found = false;
 
     int db = Integer.MAX_VALUE;
@@ -265,15 +303,15 @@ public class Ex2Sheet implements Sheet {
     return Optional.of(ib);
   }
 
-  public boolean isOp(char ch) {
+  boolean isOp(char ch) {
     return ch == '+' || ch == '-' || ch == '*' || ch == '/';
   }
 
-  public boolean isOpBetter(int db, int ob, int ib, int dc, int oc, int ic) {
+  boolean isOpBetter(int db, int ob, int ib, int dc, int oc, int ic) {
     return db > dc || db == dc && (ob > oc || ob == oc && ib > ic);
   }
 
-  public Optional<Integer> opRankOf(char op) {
+  Optional<Integer> opRankOf(char op) {
     return switch (op) {
       case '+' -> Optional.of(0);
       case '-' -> Optional.of(0);
@@ -283,7 +321,7 @@ public class Ex2Sheet implements Sheet {
     };
   }
 
-  public Optional<Coord> parseCoord(String s) {
+  Optional<Coord> parseCoord(String s) {
     if (s.length() < 1)
       return Optional.empty();
 
@@ -306,7 +344,7 @@ public class Ex2Sheet implements Sheet {
     return Optional.of(new Coord(x, y));
   }
 
-  public Optional<Double> calculateByUnOp(double n, char op) {
+  Optional<Double> calculateByUnOp(double n, char op) {
     return switch (op) {
       case '+' -> Optional.of(n);
       case '-' -> Optional.of(-n);
@@ -314,7 +352,7 @@ public class Ex2Sheet implements Sheet {
     };
   }
 
-  public Optional<Double> calculateByBiOp(double n0, double n1, char op) {
+  Optional<Double> calculateByBiOp(double n0, double n1, char op) {
     return switch (op) {
       case '+' -> Optional.of(n0 + n1);
       case '-' -> Optional.of(n0 - n1);
@@ -324,7 +362,7 @@ public class Ex2Sheet implements Sheet {
     };
   }
 
-  public Optional<Double> parseDouble(String s) {
+  Optional<Double> parseDouble(String s) {
     try {
       return Optional.of(Double.parseDouble(s));
     } catch (Exception e) {
@@ -332,11 +370,21 @@ public class Ex2Sheet implements Sheet {
     }
   }
 
-  public Optional<Integer> parseInt(String s) {
+  Optional<Integer> parseInt(String s) {
     try {
       return Optional.of(Integer.parseInt(s));
     } catch (Exception e) {
       return Optional.empty();
     }
+  }
+
+  boolean containsCoord(List<Coord> coords, Coord coord) {
+    for (int i = 0; i < coords.size(); i++) {
+      Coord coordCrnt = coords.get(i);
+      if (coord.x == coordCrnt.x && coord.y == coordCrnt.y)
+        return true;
+    }
+
+    return false;
   }
 }

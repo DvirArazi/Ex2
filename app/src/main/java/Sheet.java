@@ -98,8 +98,8 @@ public interface Sheet {
      * if a cell is not dependent on any other cell its depth is 0.
      * else assuming the cell depends on cell_1, cell_2... cell_n, the depth of a
      * cell is
-     * 1+max(depth(cell_1), depth(cell_2), ... depth(cell_n)).
-     * In case a cell os a circular dependency (e.g., c1 depends on c2 & c2 depends
+     * 1 + max(depth(cell_1), depth(cell_2), ... depth(cell_n)).
+     * In case a cell is a circular dependency (e.g., c1 depends on c2 & c2 depends
      * on c1) its depth should be -1.
      */
     public int[][] depth();
