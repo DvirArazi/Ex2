@@ -26,7 +26,7 @@ public class Ex2Sheet implements Sheet {
     table = new SCell[x][y];
     for (int i = 0; i < x; i = i + 1) {
       for (int j = 0; j < y; j = j + 1) {
-        table[i][j] = new SCell("");
+        table[i][j] = new SCell("", this, new Coord(x, y));
       }
     }
     eval();
@@ -87,7 +87,7 @@ public class Ex2Sheet implements Sheet {
 
   @Override
   public void set(int x, int y, String s) {
-    Cell c = new SCell(s);
+    Cell c = new SCell(s, this, new Coord(x, y));
     table[x][y] = c;
   }
 

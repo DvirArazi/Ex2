@@ -17,14 +17,6 @@ public class SCell implements Cell {
     /**
      * Initializes the Cell
      * @param s the value of the line
-     */
-    public SCell(String s) {
-        setData(s);
-    }
-
-    /**
-     * Initializes the Cell
-     * @param s the value of the line
      * @param sheet reference for the containing Sheet
      * @param coord the coordinate of the Cell in the Sheet
      */
