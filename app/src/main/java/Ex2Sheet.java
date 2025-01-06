@@ -1,5 +1,7 @@
-
+import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -31,7 +33,26 @@ public class Ex2Sheet implements Sheet {
 
   @Override
   public String value(int x, int y) {
-    return eval(x, y);
+    Cell cell = table[x][y];
+    String line = cell.getData();
+
+    Computable computable = compute(line, List.of(new Coord(x, y)));
+
+    cell.setType(switch (computable) {
+      case BoxedText boxedText -> Ex2Utils.TEXT;
+      case BoxedExprNum boxedExprNum -> Ex2Utils.FORM;
+      case BoxedNum boxedNum -> Ex2Utils.NUMBER;
+      case BoxedFormErr boxedFormErr -> Ex2Utils.ERR_FORM_FORMAT;
+      case BoxedCyclErr boxedCyclErr -> Ex2Utils.ERR_CYCLE_FORM;
+    });
+
+    return switch (computable) {
+      case BoxedText boxedText -> boxedText.value;
+      case BoxedExprNum boxedExprNum -> String.valueOf(boxedExprNum.value);
+      case BoxedNum boxedNum -> String.valueOf(boxedNum.value);
+      case BoxedFormErr boxedFormErr -> Ex2Utils.ERR_FORM;
+      case BoxedCyclErr boxedCyclErr -> Ex2Utils.ERR_CYCLE;
+    };
   }
 
   @Override
@@ -64,9 +85,11 @@ public class Ex2Sheet implements Sheet {
 
   @Override
   public void eval() {
-    // Add your code here
-
-    //////////////////////
+    for (int x = 0; x < width(); x++) {
+      for (int y = 0; y < height(); y++) {
+        eval(x, y);
+      }
+    }
   }
 
   @Override
@@ -80,7 +103,8 @@ public class Ex2Sheet implements Sheet {
 
     for (int x = 0; x < width(); x++) {
       for (int y = 0; y < height(); y++) {
-
+        ans[x][y] = depthSingle(List.of(new Coord(x, y)));
+        table[x][y].setOrder(ans[x][y]);
       }
     }
 
@@ -92,22 +116,38 @@ public class Ex2Sheet implements Sheet {
     Cell cell = table[last.x][last.y];
     String line = cell.getData();
 
-    boolean openCoord = false;
+    switch (compute(line, coords)) {
+      case BoxedNum boxedNum:
+        return 0;
+      case BoxedText boxedText:
+        return 0;
+      case BoxedCyclErr boxedCyclErr:
+        return -1;
+      default:
+        break;
+    }
+
+    if (!line.startsWith("="))
+      return 0;
+
+    int coordStage = 0;
 
     ArrayList<String> parts = new ArrayList<>();
 
     for (int i = 0; i < line.length(); i++) {
       char ch = line.charAt(i);
-      if (!openCoord) {
+      if (coordStage == 0) {
         if (Character.isAlphabetic(ch)) {
-          openCoord = true;
           parts.add(ch + "");
+          coordStage = 1;
         }
+      } else if (Character.isDigit(ch)) {
+        parts.set(parts.size() - 1, parts.getLast() + ch);
+        coordStage = 2;
       } else {
-        if (Character.isDigit(ch))
-          parts.set(parts.size() - 1, parts.getLast() + ch);
-        else
-          openCoord = false;
+        if (coordStage != 2)
+          parts.removeLast();
+        coordStage = 0;
       }
     }
 
@@ -115,53 +155,68 @@ public class Ex2Sheet implements Sheet {
     for (int i = 0; i < parts.size(); i++) {
       Coord newCoord = parseCoord(parts.get(i)).get();
 
-      if (containsCoord(coords, newCoord))
-        return -1;
-
       newCoords.add(newCoord);
     }
 
-    // for (int i = 0;)
+    int deepest = 0;
 
-    return 0;
+    for (int i = 0; i < newCoords.size(); i++) {
+      List<Coord> coordsCopy = new ArrayList<Coord>(coords);
+      coordsCopy.add(newCoords.get(i));
+
+      int depth = depthSingle(coordsCopy);
+
+      if (depth == 0)
+        depth = 1;
+
+      if (deepest < depth)
+        deepest = depth;
+    }
+
+    return deepest + 1;
   }
 
   @Override
   public void load(String fileName) throws IOException {
-    // Add your code here
+    List<String> lines = Files.readAllLines(Paths.get(fileName));
+    
+    for (int x = 0; x < width(); x++) {
+      for (int y = 0; y < height(); y++) {
+        table[x][y].setData("");
+      }
+    }
+    
+    for (int i = 1; i < lines.size(); i++) {
+      String[] split = lines.get(i).split(",");
+      int x = Integer.parseInt(split[0]);
+      int y = Integer.parseInt(split[1]);
 
-    /////////////////////
+      table[x][y].setData(split[2]);
+    }
   }
 
   @Override
   public void save(String fileName) throws IOException {
-    // Add your code here
+    String content = "First line: just a header line - should not be parsed.\n";
 
-    /////////////////////
+    for (int y = 0; y < height(); y++) {
+      for (int x = 0; x < width(); x++) {
+        SCell cell = (SCell)table[x][y];
+        String line = cell.getData();
+        if (line != "") {
+          content += x + "," + y + "," + line + "\n";
+        }
+      }
+    }
+
+    FileWriter writer = new FileWriter(fileName);
+    writer.write(content);
+    writer.close();
   }
 
   @Override
   public String eval(int x, int y) {
-    Cell cell = table[x][y];
-    String line = cell.getData();
-
-    Computable computable = compute(line, List.of(new Coord(x, y)));
-
-    cell.setType(switch (computable) {
-      case BoxedText boxedText -> Ex2Utils.TEXT;
-      case BoxedExprNum boxedExprNum -> Ex2Utils.FORM;
-      case BoxedNum boxedNum -> Ex2Utils.NUMBER;
-      case BoxedFormErr boxedFormErr -> Ex2Utils.ERR_FORM_FORMAT;
-      case BoxedCyclErr boxedCyclErr -> Ex2Utils.ERR_CYCLE_FORM;
-    });
-
-    return switch (computable) {
-      case BoxedText boxedText -> boxedText.value;
-      case BoxedExprNum boxedExprNum -> String.valueOf(boxedExprNum.value);
-      case BoxedNum boxedNum -> String.valueOf(boxedNum.value);
-      case BoxedFormErr boxedFormErr -> Ex2Utils.ERR_FORM;
-      case BoxedCyclErr boxedCyclErr -> Ex2Utils.ERR_CYCLE;
-    };
+    return value(x, y);
   }
 
   Computable compute(String line, List<Coord> coords) {
@@ -307,7 +362,7 @@ public class Ex2Sheet implements Sheet {
   }
 
   boolean isOpBetter(int db, int ob, int ib, int dc, int oc, int ic) {
-    return db > dc || db == dc && (ob > oc || ob == oc && ib > ic);
+    return db > dc || db == dc && (ob > oc || ob == oc && ib < ic);
   }
 
   Optional<Integer> opRankOf(char op) {

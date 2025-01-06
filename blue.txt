@@ -1,0 +1,3 @@
+First line: just a header line - should not be parsed.
+0,0,bla
+0,1,=bla

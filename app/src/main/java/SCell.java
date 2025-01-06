@@ -1,27 +1,34 @@
 
-
 // Add your documentation below:
+
+import java.util.List;
+
+import Boxed.BoxedExprNum;
+import Boxed.BoxedNum;
+import Boxed.BoxedText;
 
 public class SCell implements Cell {
     private String line;
     private int type;
-    // Add your code here
+    private Ex2Sheet sheet;
+    private Coord coord;
+    public int order;
 
     public SCell(String s) {
-        // Add your code here
         setData(s);
+    }
+
+    public SCell(String s, Ex2Sheet sheet, Coord coord) {
+        setData(s);
+        this.sheet = sheet;
+        this.coord = coord;
     }
 
     @Override
     public int getOrder() {
-        // Add your code here
-
-        /////////////////////
-        
-        return 0;
+        return order;
     }
 
-    // @Override
     @Override
     public String toString() {
         return getData();
@@ -29,9 +36,7 @@ public class SCell implements Cell {
 
     @Override
     public void setData(String s) {
-        // Add your code here
         line = s;
-        /////////////////////
     }
 
     @Override
@@ -51,7 +56,25 @@ public class SCell implements Cell {
 
     @Override
     public void setOrder(int t) {
-        // Add your code here
+        order = t;
+    }
 
+    public boolean isNumber(String text) {
+        return sheet.compute(text, List.of(coord)) instanceof BoxedNum;
+    }
+
+    public boolean isText(String text) {
+        return sheet.compute(text, List.of(coord)) instanceof BoxedText;
+    }
+
+    public boolean isForm(String text) {
+        return sheet.compute(text, List.of(coord)) instanceof BoxedExprNum;
+    }
+
+    public double computeForm(String form) {
+        if (sheet.compute(form, List.of(coord)) instanceof BoxedExprNum boxedExprNum)
+            return boxedExprNum.value;
+
+        return -1;
     }
 }
