@@ -17,6 +17,11 @@ import Boxed.Computable;
 public class Ex2Sheet implements Sheet {
   private Cell[][] table;
 
+  /**
+   * Initializes the Sheet
+   * @param x
+   * @param y
+   */
   public Ex2Sheet(int x, int y) {
     table = new SCell[x][y];
     for (int i = 0; i < x; i = i + 1) {
@@ -27,6 +32,9 @@ public class Ex2Sheet implements Sheet {
     eval();
   }
 
+  /**
+   * Initializes the sheet with the constants WIDTH and HEIGHT
+   */
   public Ex2Sheet() {
     this(Ex2Utils.WIDTH, Ex2Utils.HEIGHT);
   }
@@ -111,6 +119,11 @@ public class Ex2Sheet implements Sheet {
     return ans;
   }
 
+  /**
+   * Returns the depth of a single Cell
+   * @param coords
+   * @return
+   */
   int depthSingle(List<Coord> coords) {
     Coord last = coords.getLast();
     Cell cell = table[last.x][last.y];
@@ -219,6 +232,12 @@ public class Ex2Sheet implements Sheet {
     return value(x, y);
   }
 
+  /**
+   * Computes the value of a given Cell
+   * @param line
+   * @param coords
+   * @return
+   */
   Computable compute(String line, List<Coord> coords) {
     if (line.startsWith("=")) {
       String expr = line.substring(1).replaceAll(" ", "");
@@ -239,6 +258,12 @@ public class Ex2Sheet implements Sheet {
     return new BoxedText(line);
   }
 
+  /**
+   * Collapses a math expression to a single numeric value
+   * @param expr
+   * @param coords
+   * @return
+   */
   Collapsable collapse(String expr, List<Coord> coords) {
     while (expr.startsWith("(") && expr.endsWith(")"))
       expr = expr.substring(1, expr.length() - 1);
@@ -317,6 +342,11 @@ public class Ex2Sheet implements Sheet {
     return new BoxedFormErr();
   }
 
+  /**
+   * Returns the index of the last operator to be computed
+   * @param expr
+   * @return
+   */
   Optional<Integer> getOpIndex(String expr) {
     boolean found = false;
 
@@ -357,14 +387,35 @@ public class Ex2Sheet implements Sheet {
     return Optional.of(ib);
   }
 
+  /**
+   * Returns whether the char represents a math operation
+   * @param ch
+   * @return
+   */
   boolean isOp(char ch) {
     return ch == '+' || ch == '-' || ch == '*' || ch == '/';
   }
 
+  /**
+   * Checks whether `ib` is the latest operator to be computed or whether
+   * it should be replaced with `ic`
+   * @param db depth best
+   * @param ob operator rank best
+   * @param ib index best
+   * @param dc depth current
+   * @param oc operator rank current
+   * @param ic index current
+   * @return
+   */
   boolean isOpBetter(int db, int ob, int ib, int dc, int oc, int ic) {
     return db > dc || db == dc && (ob > oc || ob == oc && ib < ic);
   }
 
+  /**
+   * Returns the rank of the operator as determined by the order of operations
+   * @param op
+   * @return
+   */
   Optional<Integer> opRankOf(char op) {
     return switch (op) {
       case '+' -> Optional.of(0);
@@ -375,6 +426,11 @@ public class Ex2Sheet implements Sheet {
     };
   }
 
+  /**
+   * Converts a String represeting a coordinate to a Coord object 
+   * @param s
+   * @return
+   */
   Optional<Coord> parseCoord(String s) {
     if (s.length() < 1)
       return Optional.empty();
@@ -398,6 +454,12 @@ public class Ex2Sheet implements Sheet {
     return Optional.of(new Coord(x, y));
   }
 
+  /**
+   * Returns the result of the Unary operator `op` on `n`
+   * @param n
+   * @param op
+   * @return
+   */
   Optional<Double> calculateByUnOp(double n, char op) {
     return switch (op) {
       case '+' -> Optional.of(n);
@@ -406,6 +468,13 @@ public class Ex2Sheet implements Sheet {
     };
   }
 
+  /**
+   * Returns the result of the Binary operator `op` on `n0` and `n1`
+   * @param n0
+   * @param n1
+   * @param op
+   * @return
+   */
   Optional<Double> calculateByBiOp(double n0, double n1, char op) {
     return switch (op) {
       case '+' -> Optional.of(n0 + n1);
@@ -416,6 +485,11 @@ public class Ex2Sheet implements Sheet {
     };
   }
 
+  /**
+   * Parses a double, returns empty if `s` does not represent a valid double
+   * @param s
+   * @return
+   */
   Optional<Double> parseDouble(String s) {
     try {
       return Optional.of(Double.parseDouble(s));
@@ -424,6 +498,11 @@ public class Ex2Sheet implements Sheet {
     }
   }
 
+  /**
+   * Parses an int, returns empty if `s` does not represent a valid double
+   * @param s
+   * @return
+   */
   Optional<Integer> parseInt(String s) {
     try {
       return Optional.of(Integer.parseInt(s));
@@ -432,6 +511,12 @@ public class Ex2Sheet implements Sheet {
     }
   }
 
+  /**
+   * Returns whether `coord` is contained in `coords`
+   * @param coords
+   * @param coord
+   * @return
+   */
   boolean containsCoord(List<Coord> coords, Coord coord) {
     for (int i = 0; i < coords.size(); i++) {
       Coord coordCrnt = coords.get(i);

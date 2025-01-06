@@ -14,10 +14,20 @@ public class SCell implements Cell {
     private Coord coord;
     public int order;
 
+    /**
+     * Initializes the Cell
+     * @param s the value of the line
+     */
     public SCell(String s) {
         setData(s);
     }
 
+    /**
+     * Initializes the Cell
+     * @param s the value of the line
+     * @param sheet reference for the containing Sheet
+     * @param coord the coordinate of the Cell in the Sheet
+     */
     public SCell(String s, Ex2Sheet sheet, Coord coord) {
         setData(s);
         this.sheet = sheet;
@@ -59,18 +69,38 @@ public class SCell implements Cell {
         order = t;
     }
 
+    /**
+     * Returns whether the text contains a number
+     * @param text 
+     * @return
+    */
     public boolean isNumber(String text) {
         return sheet.compute(text, List.of(coord)) instanceof BoxedNum;
     }
 
+    /**
+     * Returns whether the text parameter contains generic text 
+     * @param text
+     * @return
+     */
     public boolean isText(String text) {
         return sheet.compute(text, List.of(coord)) instanceof BoxedText;
     }
 
+    /**
+     * Returns whether the text contains a valid math expression
+     * @param text
+     * @return
+     */
     public boolean isForm(String text) {
         return sheet.compute(text, List.of(coord)) instanceof BoxedExprNum;
     }
 
+    /**
+     * Returns the computed value of the form
+     * @param form
+     * @return
+     */
     public double computeForm(String form) {
         if (sheet.compute(form, List.of(coord)) instanceof BoxedExprNum boxedExprNum)
             return boxedExprNum.value;
