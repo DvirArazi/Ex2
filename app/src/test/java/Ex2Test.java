@@ -15,6 +15,7 @@ public class Ex2Test {
     sheet.set(4, 0, "=F0+5");
     sheet.set(5, 0, "=E0+5");
     sheet.set(6, 0, "=5-*7");
+    sheet.set(7, 0, "=(4+5)*(4/2)");
 
     assertEquals(sheet.value(0, 0), "1.0");
     assertEquals(sheet.value(1, 0), "1544.0");
@@ -22,6 +23,7 @@ public class Ex2Test {
     assertEquals(sheet.value(3, 0), "ERR_CYCLE!");
     assertEquals(sheet.value(4, 0), "ERR_CYCLE!");
     assertEquals(sheet.value(6, 0), "ERR_FORM!");
+    assertEquals(sheet.value(7, 0), "18.0");
   }
 
   @Test

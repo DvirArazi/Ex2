@@ -19,6 +19,7 @@ public class Ex2Sheet implements Sheet {
 
   /**
    * Initializes the Sheet
+   * 
    * @param x
    * @param y
    */
@@ -121,6 +122,7 @@ public class Ex2Sheet implements Sheet {
 
   /**
    * Returns the depth of a single Cell
+   * 
    * @param coords
    * @return
    */
@@ -192,13 +194,13 @@ public class Ex2Sheet implements Sheet {
   @Override
   public void load(String fileName) throws IOException {
     List<String> lines = Files.readAllLines(Paths.get(fileName));
-    
+
     for (int x = 0; x < width(); x++) {
       for (int y = 0; y < height(); y++) {
         table[x][y].setData("");
       }
     }
-    
+
     for (int i = 1; i < lines.size(); i++) {
       String[] split = lines.get(i).split(",");
       int x = Integer.parseInt(split[0]);
@@ -214,7 +216,7 @@ public class Ex2Sheet implements Sheet {
 
     for (int y = 0; y < height(); y++) {
       for (int x = 0; x < width(); x++) {
-        SCell cell = (SCell)table[x][y];
+        SCell cell = (SCell) table[x][y];
         String line = cell.getData();
         if (line != "") {
           content += x + "," + y + "," + line + "\n";
@@ -234,6 +236,7 @@ public class Ex2Sheet implements Sheet {
 
   /**
    * Computes the value of a given Cell
+   * 
    * @param line
    * @param coords
    * @return
@@ -260,13 +263,29 @@ public class Ex2Sheet implements Sheet {
 
   /**
    * Collapses a math expression to a single numeric value
+   * 
    * @param expr
    * @param coords
    * @return
    */
   Collapsable collapse(String expr, List<Coord> coords) {
-    while (expr.startsWith("(") && expr.endsWith(")"))
+    pCheck: while (expr.startsWith("(") && expr.endsWith(")")) {
+      int pCount = 0;
+      for (int i = 1; i < expr.length() - 1; i++) {
+        char ch = expr.charAt(i);
+
+        if (ch == '(')
+          pCount++;
+        if (ch == ')') {
+          pCount--;
+
+          if (pCount < 0)
+            break pCheck;
+        }
+      }
+
       expr = expr.substring(1, expr.length() - 1);
+    }
 
     Optional<Integer> optionalOpIndex = getOpIndex(expr);
 
@@ -344,6 +363,7 @@ public class Ex2Sheet implements Sheet {
 
   /**
    * Returns the index of the last operator to be computed
+   * 
    * @param expr
    * @return
    */
@@ -389,6 +409,7 @@ public class Ex2Sheet implements Sheet {
 
   /**
    * Returns whether the char represents a math operation
+   * 
    * @param ch
    * @return
    */
@@ -399,6 +420,7 @@ public class Ex2Sheet implements Sheet {
   /**
    * Checks whether `ib` is the latest operator to be computed or whether
    * it should be replaced with `ic`
+   * 
    * @param db depth best
    * @param ob operator rank best
    * @param ib index best
@@ -413,6 +435,7 @@ public class Ex2Sheet implements Sheet {
 
   /**
    * Returns the rank of the operator as determined by the order of operations
+   * 
    * @param op
    * @return
    */
@@ -427,7 +450,8 @@ public class Ex2Sheet implements Sheet {
   }
 
   /**
-   * Converts a String represeting a coordinate to a Coord object 
+   * Converts a String represeting a coordinate to a Coord object
+   * 
    * @param s
    * @return
    */
@@ -456,6 +480,7 @@ public class Ex2Sheet implements Sheet {
 
   /**
    * Returns the result of the Unary operator `op` on `n`
+   * 
    * @param n
    * @param op
    * @return
@@ -470,6 +495,7 @@ public class Ex2Sheet implements Sheet {
 
   /**
    * Returns the result of the Binary operator `op` on `n0` and `n1`
+   * 
    * @param n0
    * @param n1
    * @param op
@@ -487,6 +513,7 @@ public class Ex2Sheet implements Sheet {
 
   /**
    * Parses a double, returns empty if `s` does not represent a valid double
+   * 
    * @param s
    * @return
    */
@@ -500,6 +527,7 @@ public class Ex2Sheet implements Sheet {
 
   /**
    * Parses an int, returns empty if `s` does not represent a valid double
+   * 
    * @param s
    * @return
    */
@@ -513,6 +541,7 @@ public class Ex2Sheet implements Sheet {
 
   /**
    * Returns whether `coord` is contained in `coords`
+   * 
    * @param coords
    * @param coord
    * @return
