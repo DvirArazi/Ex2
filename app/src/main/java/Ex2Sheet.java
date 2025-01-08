@@ -128,6 +128,9 @@ public class Ex2Sheet implements Sheet {
    */
   int depthSingle(List<Coord> coords) {
     Coord last = coords.getLast();
+
+    if (!isIn(last.x, last.y)) return 0;
+
     Cell cell = table[last.x][last.y];
     String line = cell.getData();
 

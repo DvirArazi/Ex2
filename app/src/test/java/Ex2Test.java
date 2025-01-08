@@ -16,6 +16,8 @@ public class Ex2Test {
     sheet.set(5, 0, "=E0+5");
     sheet.set(6, 0, "=5-*7");
     sheet.set(7, 0, "=(4+5)*(4/2)");
+    sheet.set(8, 0, "=()");
+    sheet.set(0, 1, "=59-");
 
     assertEquals(sheet.value(0, 0), "1.0");
     assertEquals(sheet.value(1, 0), "1544.0");
@@ -24,6 +26,8 @@ public class Ex2Test {
     assertEquals(sheet.value(4, 0), "ERR_CYCLE!");
     assertEquals(sheet.value(6, 0), "ERR_FORM!");
     assertEquals(sheet.value(7, 0), "18.0");
+    assertEquals(sheet.value(8, 0), "ERR_FORM!");
+    assertEquals(sheet.value(0, 1), "ERR_FORM!");
   }
 
   @Test
@@ -78,5 +82,12 @@ public class Ex2Test {
       SCell cell = (SCell) sheet.get(0, 0);
       assertEquals(cell.isForm(cell.getData()), answers[i]);
     }
+  }
+
+  @Test
+  public void Ex2Index2DToStringTest() {
+    Ex2Index2D index2d = new Ex2Index2D(5, 13);
+
+    assertEquals("F13", index2d.toString());
   }
 }
