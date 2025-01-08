@@ -5,6 +5,9 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+
+import com.google.common.collect.Sets;
 
 import Boxed.BoxedCyclErr;
 import Boxed.BoxedNum;
@@ -109,89 +112,75 @@ public class Ex2Sheet implements Sheet {
   @Override
   public int[][] depth() {
     int[][] ans = new int[width()][height()];
-
     for (int x = 0; x < width(); x++) {
       for (int y = 0; y < height(); y++) {
-        ans[x][y] = depthSingle(List.of(new Coord(x, y)));
-        table[x][y].setOrder(ans[x][y]);
+        ans[x][y] = Integer.MAX_VALUE;
+      }
+    }
+
+    boolean done = false;
+    while (!done) {
+      done = true;
+      for (int x = 0; x < width(); x++) {
+        for (int y = 0; y < height(); y++) {
+          SCell cell = (SCell) table[x][y];
+          String line = cell.getData();
+          Computable computed = compute(line, List.of());
+
+          if (computed instanceof BoxedCyclErr)
+            ans[x][y] = -1;
+          else if (computed instanceof BoxedNum ||
+              computed instanceof BoxedText)
+            ans[x][y] = 0;
+          else if (computed instanceof BoxedExprNum ||
+              computed instanceof BoxedFormErr) {
+            int largestDepth = Integer.MIN_VALUE;
+
+            Set<Coord> inners = getInners(line.substring(1));
+
+            if (inners.isEmpty()) {
+              ans[x][y] = 1;
+              continue;
+            }
+
+            for (Coord coord : inners)
+              largestDepth = Math.max(largestDepth, ans[coord.x][coord.y]);
+            if (largestDepth == Integer.MAX_VALUE) {
+              done = false;
+              continue;
+            }
+
+            if (largestDepth == 0)
+              largestDepth = 1;
+            ans[x][y] = largestDepth + 1;
+          }
+        }
       }
     }
 
     return ans;
+
   }
 
-  /**
-   * Returns the depth of a single Cell
-   * 
-   * @param coords
-   * @return
-   */
-  int depthSingle(List<Coord> coords) {
-    Coord last = coords.getLast();
+  public static Set<Coord> getInners(String line) {
+    line = removePs(line);
 
-    if (!isIn(last.x, last.y)) return 0;
-
-    Cell cell = table[last.x][last.y];
-    String line = cell.getData();
-
-    switch (compute(line, coords)) {
-      case BoxedNum boxedNum:
-        return 0;
-      case BoxedText boxedText:
-        return 0;
-      case BoxedCyclErr boxedCyclErr:
-        return -1;
-      default:
-        break;
+    Optional<Coord> optionalCoord = parseCoord(line);
+    if (optionalCoord.isPresent()) {
+      Coord coord = optionalCoord.get();
+      return Set.of(coord);
     }
 
-    if (!line.startsWith("="))
-      return 0;
+    Optional<Integer> optionalOpI = getOpIndex(line);
+    if (optionalOpI.isEmpty())
+      return Set.of();
 
-    int coordStage = 0;
+    int opI = optionalOpI.get();
 
-    ArrayList<String> parts = new ArrayList<>();
+    Set<Coord> set0 = getInners(line.substring(0, opI));
+    Set<Coord> set1 = getInners(line.substring(opI + 1));
 
-    for (int i = 0; i < line.length(); i++) {
-      char ch = line.charAt(i);
-      if (coordStage == 0) {
-        if (Character.isAlphabetic(ch)) {
-          parts.add(ch + "");
-          coordStage = 1;
-        }
-      } else if (Character.isDigit(ch)) {
-        parts.set(parts.size() - 1, parts.getLast() + ch);
-        coordStage = 2;
-      } else {
-        if (coordStage != 2)
-          parts.removeLast();
-        coordStage = 0;
-      }
-    }
-
-    ArrayList<Coord> newCoords = new ArrayList<Coord>();
-    for (int i = 0; i < parts.size(); i++) {
-      Coord newCoord = parseCoord(parts.get(i)).get();
-
-      newCoords.add(newCoord);
-    }
-
-    int deepest = 0;
-
-    for (int i = 0; i < newCoords.size(); i++) {
-      List<Coord> coordsCopy = new ArrayList<Coord>(coords);
-      coordsCopy.add(newCoords.get(i));
-
-      int depth = depthSingle(coordsCopy);
-
-      if (depth == 0)
-        depth = 1;
-
-      if (deepest < depth)
-        deepest = depth;
-    }
-
-    return deepest + 1;
+    return Sets.union(set0, set1);
   }
 
   @Override
@@ -272,28 +261,7 @@ public class Ex2Sheet implements Sheet {
    * @return
    */
   Collapsable collapse(String expr, List<Coord> coords) {
-    pCheck: while (expr.startsWith("(") && expr.endsWith(")")) {
-      int pCount = 0;
-      for (int i = 1; i < expr.length() - 1; i++) {
-        char ch = expr.charAt(i);
-
-        if (ch == '(') {
-          pCount++;
-          continue;
-        }
-
-        if (ch == ')') {
-          pCount--;
-
-          if (pCount < 0)
-            break pCheck;
-        }
-      }
-      if (pCount != 0)
-        break pCheck;
-
-        expr = expr.substring(1, expr.length() - 1);
-    }
+    expr = removePs(expr);
 
     Optional<Integer> optionalOpIndex = getOpIndex(expr);
 
@@ -369,13 +337,40 @@ public class Ex2Sheet implements Sheet {
     return new BoxedFormErr();
   }
 
+  static String removePs(String expr) {
+    pCheck: while (expr.startsWith("(") && expr.endsWith(")")) {
+      int pCount = 0;
+      for (int i = 1; i < expr.length() - 1; i++) {
+        char ch = expr.charAt(i);
+
+        if (ch == '(') {
+          pCount++;
+          continue;
+        }
+
+        if (ch == ')') {
+          pCount--;
+
+          if (pCount < 0)
+            break pCheck;
+        }
+      }
+      if (pCount != 0)
+        break pCheck;
+
+      expr = expr.substring(1, expr.length() - 1);
+    }
+
+    return expr;
+  }
+
   /**
    * Returns the index of the last operator to be computed
    * 
    * @param expr
    * @return
    */
-  Optional<Integer> getOpIndex(String expr) {
+  static Optional<Integer> getOpIndex(String expr) {
     boolean found = false;
 
     int db = Integer.MAX_VALUE;
@@ -421,7 +416,7 @@ public class Ex2Sheet implements Sheet {
    * @param ch
    * @return
    */
-  boolean isOp(char ch) {
+  static boolean isOp(char ch) {
     return ch == '+' || ch == '-' || ch == '*' || ch == '/';
   }
 
@@ -437,7 +432,7 @@ public class Ex2Sheet implements Sheet {
    * @param ic index current
    * @return
    */
-  boolean isOpBetter(int db, int ob, int ib, int dc, int oc, int ic) {
+  static boolean isOpBetter(int db, int ob, int ib, int dc, int oc, int ic) {
     return db > dc || db == dc && (ob > oc || ob == oc && ib < ic);
   }
 
@@ -447,7 +442,7 @@ public class Ex2Sheet implements Sheet {
    * @param op
    * @return
    */
-  Optional<Integer> opRankOf(char op) {
+  static Optional<Integer> opRankOf(char op) {
     return switch (op) {
       case '+' -> Optional.of(0);
       case '-' -> Optional.of(0);

@@ -1,6 +1,6 @@
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import java.util.List;
+import java.util.Set;
 
 import org.junit.jupiter.api.Test;
 
@@ -18,6 +18,9 @@ public class Ex2Test {
     sheet.set(7, 0, "=(4+5)*(4/2)");
     sheet.set(8, 0, "=()");
     sheet.set(0, 1, "=59-");
+    sheet.set(0, 2, "=-A0");
+    sheet.set(0, 3, "=A0-");
+    sheet.set(0, 4, "=bla");
 
     assertEquals(sheet.value(0, 0), "1.0");
     assertEquals(sheet.value(1, 0), "1544.0");
@@ -28,6 +31,9 @@ public class Ex2Test {
     assertEquals(sheet.value(7, 0), "18.0");
     assertEquals(sheet.value(8, 0), "ERR_FORM!");
     assertEquals(sheet.value(0, 1), "ERR_FORM!");
+    assertEquals(sheet.value(0, 2), "-1.0");
+    assertEquals(sheet.value(0, 3), "ERR_FORM!");
+    assertEquals(sheet.value(0, 4), "ERR_FORM!");
   }
 
   @Test
@@ -62,12 +68,14 @@ public class Ex2Test {
     sheet.set(5, 0, "=F0");
     sheet.set(6, 0, "=E0");
 
-    assertEquals(sheet.depthSingle(List.of(new Coord(0, 0))), 0);
-    assertEquals(sheet.depthSingle(List.of(new Coord(1, 0))), 0);
-    assertEquals(sheet.depthSingle(List.of(new Coord(2, 0))), 1);
-    assertEquals(sheet.depthSingle(List.of(new Coord(3, 0))), 2);
-    assertEquals(sheet.depthSingle(List.of(new Coord(4, 0))), 3);
-    assertEquals(sheet.depthSingle(List.of(new Coord(5, 0))), -1);
+    int[][] depth = sheet.depth();
+
+    assertEquals(depth[0][0], 0);
+    assertEquals(depth[1][0], 0);
+    assertEquals(depth[2][0], 1);
+    assertEquals(depth[3][0], 2);
+    assertEquals(depth[4][0], 3);
+    assertEquals(depth[5][0], -1);
   }
 
   @Test
@@ -89,5 +97,25 @@ public class Ex2Test {
     Ex2Index2D index2d = new Ex2Index2D(5, 13);
 
     assertEquals("F13", index2d.toString());
+  }
+
+  @Test
+  public void Ex2SheetGetInners() {
+    Coord c0 = new Coord(5, 7);
+    Coord c1 = new Coord(5, 7);
+
+    assertEquals(c0, c1);
+
+    assertEquals(
+        Set.of(new Coord(5, 13), new Coord(3, 3)),
+        Ex2Sheet.getInners("F13+56*D3/(1+D3)"));
+
+    assertEquals(
+        Set.of(new Coord(1, 0)),
+        Ex2Sheet.getInners("B0+7"));
+
+    assertEquals(
+        Set.of(new Coord(3, 0)),
+        Ex2Sheet.getInners("(D0*5)"));
   }
 }
