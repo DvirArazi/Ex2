@@ -286,7 +286,9 @@ public class Ex2Sheet implements Sheet {
             break pCheck;
         }
       }
-      if (pCount == 0)
+      if (pCount != 0)
+        break pCheck;
+
         expr = expr.substring(1, expr.length() - 1);
     }
 
@@ -458,7 +460,7 @@ public class Ex2Sheet implements Sheet {
    * @param s
    * @return
    */
-  Optional<Coord> parseCoord(String s) {
+  public static Optional<Coord> parseCoord(String s) {
     if (s.length() < 1)
       return Optional.empty();
 
@@ -520,7 +522,7 @@ public class Ex2Sheet implements Sheet {
    * @param s
    * @return
    */
-  Optional<Double> parseDouble(String s) {
+  public static Optional<Double> parseDouble(String s) {
     try {
       return Optional.of(Double.parseDouble(s));
     } catch (Exception e) {
@@ -534,7 +536,7 @@ public class Ex2Sheet implements Sheet {
    * @param s
    * @return
    */
-  Optional<Integer> parseInt(String s) {
+  public static Optional<Integer> parseInt(String s) {
     try {
       return Optional.of(Integer.parseInt(s));
     } catch (Exception e) {
