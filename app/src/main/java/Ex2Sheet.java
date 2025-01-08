@@ -274,8 +274,11 @@ public class Ex2Sheet implements Sheet {
       for (int i = 1; i < expr.length() - 1; i++) {
         char ch = expr.charAt(i);
 
-        if (ch == '(')
+        if (ch == '(') {
           pCount++;
+          continue;
+        }
+
         if (ch == ')') {
           pCount--;
 
@@ -283,8 +286,8 @@ public class Ex2Sheet implements Sheet {
             break pCheck;
         }
       }
-
-      expr = expr.substring(1, expr.length() - 1);
+      if (pCount == 0)
+        expr = expr.substring(1, expr.length() - 1);
     }
 
     Optional<Integer> optionalOpIndex = getOpIndex(expr);
