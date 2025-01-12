@@ -162,6 +162,20 @@ public class Ex2Sheet implements Sheet {
 
   }
 
+  static boolean canBeComputedNow(String line, int[][] depths) {
+    if (!line.startsWith("="))
+      return false;
+
+    Set<Coord> inners = getInners(line.substring(1));
+
+    for (Coord inner : inners) {
+      if (depths[inner.x][inner.y] == -1)
+        return false;
+    }
+
+    return true;
+  }
+
   public static Set<Coord> getInners(String line) {
     line = removePs(line);
 
